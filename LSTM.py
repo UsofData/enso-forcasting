@@ -59,7 +59,7 @@ values = df.values
 # ensure all data is float
 values = values.astype('float32')
 # frame as supervised learning
-reframed = series_to_supervised(values, 6, 1)
+reframed = series_to_supervised(values, 2, 1)
 # drop columns we don't want to predict
 reframed.drop(reframed.columns[len(reframed.columns)-2], axis=1, inplace=True)
 print(reframed.head())
