@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Oct 20 17:30:46 2017
-Reference: https://machinelearningmastery.com/multivariate-time-series-forecasting-lstms-keras/
+Created on Tue Oct 24 17:02:48 2017
+Only ONI was used in this code. Validation was carried out through walk forward
+ENSO blog: https://www.climate.gov/news-features/blogs/enso/how-have-changing-enso-forecasts-impacted-atlantic-seasonal-hurricane
 @author: yjiang
 """
 
 from math import sqrt
-from numpy import concatenate
+import numpy
 from matplotlib import pyplot
 from pandas import read_csv
 from pandas import DataFrame
 from pandas import concat
 from pandas import datetime
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import mean_squared_error
 from keras.models import Sequential
 from keras.layers import Dense
@@ -50,21 +49,17 @@ def parser(x):
        return datetime.strptime(x, '%Y0%m') 
 df = read_csv('preprocessed/indice_olr_excluded.csv', header=0, parse_dates=[0], index_col=0, date_parser=parser)
 
-values = df.values
-# integer encode direction
-#==============================================================================
-# encoder = LabelEncoder()
-# values[:,1] = encoder.fit_transform(values[:,1])
-#==============================================================================
+v = df.values
+ONI = v[:,1].reshape(v.shape[0],1)
+
 # ensure all data is float
-values = values.astype('float32')
+ONI = ONI.astype('float32')
 # specify the sliding window size and number of features
-lag = 6
-n_features = 2
+lag = 96
+n_features = 1
 # frame as supervised learning
-reframed = series_to_supervised(values, lag, 1)
+reframed = series_to_supervised(ONI, lag, 1)
 # drop columns we don't want to predict
-reframed.drop(reframed.columns[len(reframed.columns)-2], axis=1, inplace=True)
 print(reframed.head())
 
 # Define and Fit Model
@@ -95,8 +90,16 @@ pyplot.show()
 
 # evaluate the model
 # make a prediction
-yhat = model.predict(test_X)
-test_y = test_y.reshape((len(test_y), 1))
+
+# using walk forward validation
+temp = train_y
+for i in range(0, len(test_y)):
+     test_t_x = temp[-lag:].reshape((1, lag, n_features))
+     yhat_t = model.predict(test_t_x)
+     temp = numpy.append(temp, yhat_t)
+yhat = temp[n_train:]
+
+
 # calculate RMSE
 rmse = sqrt(mean_squared_error(test_y, yhat))
 print('Test RMSE: %.3f' % rmse)
