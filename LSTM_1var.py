@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Oct 24 17:02:48 2017
-Only ONI was used in this code. Validation was carried out through walk forward
+1) Only ONI was used in this code;
+2) Sliding window strategy
+3) Validation was carried out through walk forward
 ENSO blog: https://www.climate.gov/news-features/blogs/enso/how-have-changing-enso-forecasts-impacted-atlantic-seasonal-hurricane
 @author: yjiang
 """
@@ -55,7 +57,7 @@ ONI = v[:,1].reshape(v.shape[0],1)
 # ensure all data is float
 ONI = ONI.astype('float32')
 # specify the sliding window size and number of features
-lag = 96
+lag = 120
 n_features = 1
 # frame as supervised learning
 reframed = series_to_supervised(ONI, lag, 1)
@@ -81,7 +83,7 @@ model.add(LSTM(10, input_shape=(train_X.shape[1], train_X.shape[2])))
 model.add(Dense(1))
 model.compile(loss='mae', optimizer='adam')
 # fit network
-history = model.fit(train_X, train_y, epochs=50, batch_size=72, validation_data=(test_X, test_y), verbose=2, shuffle=False)
+history = model.fit(train_X, train_y, epochs=30, batch_size=72, validation_data=(test_X, test_y), verbose=2, shuffle=False)
 # plot history
 pyplot.plot(history.history['loss'], label='train')
 pyplot.plot(history.history['val_loss'], label='test')
