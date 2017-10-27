@@ -90,7 +90,7 @@ model.add(LSTM(2, return_sequences=True, stateful=True))
 # model.add(Dense(2))
 model.compile(loss='mae', optimizer='adam')
 # fit network
-for i in range(0, 1):
+for i in range(0, 50):
     model.fit(train_X, train_y, batch_size = batch, epochs=1, verbose=2, shuffle=False)
 	#model.train_on_batch(train_X, train_y, batch_size = 64)
     model.reset_states()
