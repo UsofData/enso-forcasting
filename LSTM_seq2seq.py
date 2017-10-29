@@ -84,26 +84,40 @@ print(train_X.shape, train_y.shape, test_X.shape, test_y.shape)
 # design network
 batch = 1
 model = Sequential()
-model.add(LSTM(20, batch_input_shape = (batch, None, n_features), return_sequences=True, stateful=True))
+model.add(LSTM(50, batch_input_shape = (batch, None, n_features), return_sequences=True, stateful=True))
+model.add(LSTM(40, return_sequences=True, stateful=True))
+model.add(LSTM(30, return_sequences=True, stateful=True))
+model.add(LSTM(20, return_sequences=True, stateful=True))
 model.add(LSTM(10, return_sequences=True, stateful=True))
-model.add(LSTM(2, return_sequences=True, stateful=True))
-# model.add(Dense(2))
+model.add(LSTM(5, return_sequences=True, stateful=True))
+# model.add(LSTM(2, return_sequences=True, stateful=True)) # try dense
+model.add(Dense(2))
 model.compile(loss='mae', optimizer='adam')
 # fit network
-for i in range(0, 50):
+for i in range(0, 120):
     model.fit(train_X, train_y, batch_size = batch, epochs=1, verbose=2, shuffle=False)
 	#model.train_on_batch(train_X, train_y, batch_size = 64)
     model.reset_states()
 
 # prediction
+#==============================================================================
+# next_X = model.predict(train_X)[0, -1, 0:n_features].reshape(1, 1, n_features)
+# model.reset_states()
+# new_seq = train_X
+# for i in range(0, test_X.shape[1]):
+#     new_seq = concatenate([new_seq, next_X], axis=1)
+#     next_X = model.predict(new_seq)[0, -1, 0:n_features].reshape(1, 1, n_features)
+#     model.reset_states()
+#     print(i)
+#==============================================================================
 next_X = model.predict(train_X)[0, -1, 0:n_features].reshape(1, 1, n_features)
-new_seq = train_X
+new_seq = next_X
 for i in range(0, test_X.shape[1]):
+    next_X = model.predict(next_X).reshape(1, 1, n_features)
     new_seq = concatenate([new_seq, next_X], axis=1)
-    next_X = model.predict(new_seq)[0, -1, 0:n_features].reshape(1, 1, n_features)
     print(i)
-
-yhat = new_seq[:, n_train:, :].reshape(test_y.shape[0], n_features)
+    
+yhat = new_seq[:,1:,:].reshape(test_y.shape[0], n_features)
 train_y = train_y.reshape(train_y.shape[1], n_features)
 pyplot.plot(train_y[:, 1])
 pyplot.plot([None for i in train_y[:, 1]] + [x for x in test_y[:, 1]])
@@ -111,29 +125,10 @@ pyplot.plot([None for i in train_y[:, 1]] + [x for x in yhat[:, 1]])
 pyplot.show()
 
 #==============================================================================
-# # design network
-# model = Sequential()
-# model.add(LSTM(10, input_shape=(train_X.shape[1], train_X.shape[2])))
-# model.add(Dense(1))
-# model.compile(loss='mae', optimizer='adam')
-# # fit network
-# history = model.fit(train_X, train_y, epochs=50, batch_size=72, validation_data=(test_X, test_y), verbose=2, shuffle=False)
-# # plot history
-# pyplot.plot(history.history['loss'], label='train')
-# pyplot.plot(history.history['val_loss'], label='test')
-# pyplot.legend()
-# pyplot.show()
-# 
-# # evaluate the model
-# # make a prediction
-# yhat = model.predict(test_X)
-# test_y = test_y.reshape((len(test_y), 1))
-# # calculate RMSE
-# rmse = sqrt(mean_squared_error(test_y, yhat))
-# print('Test RMSE: %.3f' % rmse)
-# 
-# pyplot.plot(train_y)
-# pyplot.plot([None for i in train_y] + [x for x in test_y])
-# pyplot.plot([None for i in train_y] + [x for x in yhat])
+# yhat = new_seq[:, n_train:, :].reshape(test_y.shape[0], n_features)
+# train_y = train_y.reshape(train_y.shape[1], n_features)
+# pyplot.plot(train_y[:, 1])
+# pyplot.plot([None for i in train_y[:, 1]] + [x for x in test_y[:, 1]])
+# pyplot.plot([None for i in train_y[:, 1]] + [x for x in yhat[:, 1]])
 # pyplot.show()
 #==============================================================================
