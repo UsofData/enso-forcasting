@@ -3,6 +3,7 @@
 """
 Created on Thu Oct 26 16:25:25 2017
 1) seq2seq
+2) 2 variables
 @author: yjiang
 """
 
@@ -94,7 +95,7 @@ model.add(LSTM(5, return_sequences=True, stateful=True))
 model.add(Dense(2))
 model.compile(loss='mae', optimizer='adam')
 # fit network
-for i in range(0, 120):
+for i in range(0, 1200):
     model.fit(train_X, train_y, batch_size = batch, epochs=1, verbose=2, shuffle=False)
 	#model.train_on_batch(train_X, train_y, batch_size = 64)
     model.reset_states()

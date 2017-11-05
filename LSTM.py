@@ -3,6 +3,9 @@
 """
 Created on Fri Oct 20 17:30:46 2017
 Reference: https://machinelearningmastery.com/multivariate-time-series-forecasting-lstms-keras/
+1) 1 varaible
+2) no walk forward
+3) sliding window
 @author: yjiang
 """
 
