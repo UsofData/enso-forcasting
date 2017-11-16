@@ -56,7 +56,7 @@ def fit_lstm(train, n_lag, n_seq, n_batch, nb_epoch, n_neurons):
     model = Sequential()
     model.add(LSTM(n_neurons[0], batch_input_shape=(n_batch, X.shape[1], X.shape[2]), stateful=True))
 #==============================================================================
-#     # multiple layers of LSTM problem
+#     # need to look into the multi-layer LSTM problem (input dimension)
 #     model.add(LSTM(n_neurons[1], stateful=True))
 #     model.add(LSTM(n_neurons[2], stateful=True))
 #     model.add(LSTM(n_neurons[3], stateful=True))

@@ -14,8 +14,6 @@ from pandas import read_csv
 from pandas import DataFrame
 from pandas import concat
 from pandas import datetime
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import mean_squared_error
 from keras.models import Sequential
 from keras.layers import Dense
@@ -97,7 +95,7 @@ model.compile(loss='mae', optimizer='adam')
 # fit network
 for i in range(0, 1200):
     model.fit(train_X, train_y, batch_size = batch, epochs=1, verbose=2, shuffle=False)
-	#model.train_on_batch(train_X, train_y, batch_size = 64)
+	#model.train_on_batch(train_X, train_y, batch_size = 64), batch size, stateful problem on mastery machine learning blog
     model.reset_states()
 
 # prediction
