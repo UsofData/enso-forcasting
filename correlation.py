@@ -24,7 +24,7 @@ df = read_csv('preprocessed/indice_olr_excluded.csv', header=0, parse_dates=[0],
 
 lag = 6
 for t in range(lag+1):
-    soi = df.values[372+t:,0]      
+    soi = df.values[372+t:,0]   # if t=0, soi starts from 1982    
     soi = soi.reshape(soi.shape[0], 1)
 
     nc = Dataset("/Users/yjiang/Downloads/sst.mnmean.nc", "r", format="NETCDF4")
