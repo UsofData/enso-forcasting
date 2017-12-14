@@ -10,5 +10,7 @@ Specifically, the code here includes a few modules:
 
 Current results:
 Correlation between SOI and SST across all difference grids over time
+![lag0](https://user-images.githubusercontent.com/5552606/34017287-282af5b8-e0f3-11e7-8a86-31e5addaa09c.png)
 
 LSTM predictions result
+<img width="501" alt="screen shot 2017-11-04 at 8 10 13 pm" src="https://user-images.githubusercontent.com/5552606/34017302-3862a2b4-e0f3-11e7-99b7-188bcb51c986.png">
