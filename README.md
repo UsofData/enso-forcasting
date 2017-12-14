@@ -7,3 +7,8 @@ Specifically, the code here includes a few modules:
 * Correlation between SOI index and a number of variables over time
 * Lagged Linear Modeling
 * RNN/LSTM modeling
+
+Current results:
+Correlation between SOI and SST across all difference grids over time
+
+LSTM predictions result
