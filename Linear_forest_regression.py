@@ -15,12 +15,10 @@ from pandas import DataFrame
 from pandas import concat
 from pandas import datetime
 from sklearn.metrics import mean_squared_error
-from keras.models import Sequential
-from keras.layers import Dense
-from keras.layers import LSTM
-import os.path
-from keras.models import load_model
-import numpy as np
+from sklearn.multioutput import MultiOutputRegressor
+from sklearn.ensemble import RandomForestRegressor
+from sklearn import linear_model
+
 
 def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
     n_vars = 1 if type(data) is list else data.shape[1]
@@ -45,51 +43,34 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
         agg.dropna(inplace=True)
     return agg
 
-# fit an LSTM network to training data
-# The end of the epoch is the end of the sequence and the internal state should not 
-# carry over to the start of the sequence on the next epoch.
-# I run the epochs manually to give fine grained control over when resets occur (by 
-# default they occur at the end of each batch).
-def fit_lstm(train, n_lag, n_ahead, n_batch, nb_epoch, n_neurons):
+# fit a linear model
+def fit_linear(train, n_ahead):
     # reshape training into [samples, timesteps, features]
-    X, y = train[:, :-n_ahead], train[:, -n_ahead:]
-    # X = X.reshape(X.shape[0], 1, X.shape[1])
-    X = X.reshape(X.shape[0], n_lag, int(X.shape[1]/n_lag))
-    # y = y.reshape(y.shape[0], 1, n_ahead)
-
-    # design network
-    model = Sequential()
-    model.add(LSTM(n_neurons, batch_input_shape=(n_batch, X.shape[1], X.shape[2]), stateful=True))
-    
-# =============================================================================
-#     model.add(LSTM(n_neurons[1], stateful=True))
-#     model.add(LSTM(n_neurons[2], stateful=True))
-#     model.add(LSTM(n_neurons[3], stateful=True))
-# =============================================================================
-    
-    model.add(Dense(n_ahead))
-    model.compile(loss='mean_squared_error', optimizer='adam')
-    # fit network
-    for i in range(nb_epoch):
-        model.fit(X, y, epochs=1, batch_size=n_batch, verbose=2, shuffle=False)
-        model.reset_states()
+    X, Y = train[:, :-n_ahead], train[:, -n_ahead:]
+    regr = linear_model.LinearRegression()
+    model = MultiOutputRegressor(regr).fit(X, Y)
     return model
 
-# make one forecast with an LSTM,
-def forecast_lstm(model, X, n_batch, n_lag):
-    # reshape input pattern to [samples, timesteps, features]
-    X = X.reshape(1, n_lag, int(len(X)/n_lag))
+# fit a linear model
+def fit_randomF(train, n_ahead):
+    # reshape training into [samples, timesteps, features]
+    X, Y = train[:, :-n_ahead], train[:, -n_ahead:]
+    regr = RandomForestRegressor(max_depth = 30, random_state=2)
+    model = MultiOutputRegressor(regr).fit(X, Y)
+    return model
+
+def forecast_linear(model, X):
     # make forecast
-    forecast = model.predict(X, batch_size=n_batch)
+    forecast = model.predict(X)
     # convert to array
     return [x for x in forecast[0, :]]
 
-def make_forecasts(model, n_batch, train, test, n_lag, n_ahead):
+def make_forecasts(model, test, n_ahead):
     forecasts = list()
     for i in range(len(test)):
         X = test[i, :-n_ahead]
         # make forecast
-        forecast = forecast_lstm(model, X, n_batch, n_lag)
+        forecast = forecast_linear(model, X)
         # store the forecast
         forecasts.append(forecast)
     return forecasts
@@ -110,7 +91,7 @@ def plot_forecasts(series, forecasts, n_test, xlim, ylim, n_ahead, linestyle = N
     else:
         pyplot.plot(series, linestyle, label='observed')
     pyplot.xlim(xlim, ylim)
-    pyplot.legend(loc='upper left')
+    pyplot.legend(loc='upper right')
     # plot the forecasts in red
     for i in range(len(forecasts)):
         if i%n_ahead ==0: # this ensures not all segements are plotted, instead it is plotted every n_ahead
@@ -150,15 +131,6 @@ reframed = series_to_supervised(enso, lag, ahead)
 # drop columns we don't want to predict
 print(reframed.head())
 
-df_temp = reframed.drop(['VAR(t+1)','VAR(t+2)'], 1)
-fig = pyplot.figure()
-df_cor = df_temp.corr().abs()
-for i in range(0,4):
-    index = np.arange(0, 56, 5) + i
-    fig.add_subplot(2, 2, i+1)
-    df_cor['VAR(t)'].iloc[index[::-1]].plot(title = df.columns[i])
-
-
 # Define and Fit Model
 values = reframed.values
 n_train = int(len(values) * 0.8)
@@ -166,35 +138,11 @@ train = values[:n_train, :]
 test = values[n_train:, :]
 
 # fit model
-file_path = '/Users/yjiang/Documents/pythonWorkspace/enso-forcasting/model/my_model.h5'
-if not os.path.exists(file_path):
-    model = fit_lstm(train, lag, ahead, 1, 50, 30)
-    model.save(file_path)
-else:
-    model = load_model(file_path)
 
-# =============================================================================
-# train_X, train_y = train[:, :-ahead], train[:, -ahead:]
-# train_X = train_X.reshape(train_X.shape[0], lag, int(train_X.shape[1]/lag))
-# test_X, test_y = test[:, :-ahead], test[:, -ahead:]
-# test_X = test_X.reshape((test_X.shape[0], lag, int(test_X.shape[1]/lag)))
-# 
-# # design network
-# model = Sequential()
-# model.add(LSTM(50, input_shape=(train_X.shape[1], train_X.shape[2])))
-# model.add(Dense(ahead))
-# model.compile(loss='mae', optimizer='adam')
-# # fit network
-# history = model.fit(train_X, train_y, epochs=100, batch_size=72, validation_data=(test_X, test_y), verbose=2, shuffle=False)
-# # plot history
-# pyplot.plot(history.history['loss'], label='train')
-# pyplot.plot(history.history['val_loss'], label='test')
-# pyplot.legend()
-# pyplot.show()
-# =============================================================================
+# model = fit_linear(train, ahead)
+model = fit_randomF(train, ahead)
 
-
-forecasts = make_forecasts(model, 1, train, test, lag, ahead)
+forecasts = make_forecasts(model, test, ahead)
 
 # evaluate forecasts
 actual = [row[-ahead:] for row in test]

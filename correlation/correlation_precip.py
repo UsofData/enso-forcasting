@@ -21,7 +21,7 @@ def parser(x):
         return datetime.strptime(x, '%Y%m')
     else:
        return datetime.strptime(x, '%Y0%m') 
-df = read_csv('preprocessed/indice_olr_excluded.csv', header=0, parse_dates=[0], 
+df = read_csv('../preprocessed/indice_olr_excluded.csv', header=0, parse_dates=[0], 
               index_col=0, date_parser=parser)
 
 nc = Dataset("/Users/yjiang/Desktop/DLocean/data/precip.mon.mean.nc", "r", format="NETCDF4")
@@ -46,7 +46,7 @@ a = a.reshape(a.shape[0]*a.shape[1], a.shape[2], a.shape[3])
 lag = 6
 for t in range(lag+1):
     soi = df.values[336+t:,0]   # if t=0, soi starts from 1982    
-    soi = soi.reshape(soi.bshape[0], 1)
+    soi = soi.reshape(soi.shape[0], 1)
 
     precip = a[0:-4-t,:,:]
     

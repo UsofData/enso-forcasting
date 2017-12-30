@@ -20,7 +20,7 @@ def parser(x):
     else:
        return datetime.strptime(x, '%Y0%m') 
 df = read_csv('preprocessed/indice_everything_included.csv', header=0, parse_dates=[0], index_col=0, date_parser=parser)
-# print(df.head())
+print(df.head())
 
 #check missing value
 pd.isnull(df).any()

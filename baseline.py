@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Oct 19 13:54:00 2017
-Description: use the 6th last month of data to predict the current one
+Description: use the 6th last month of data to predict the current one （persistence model)
 Reference: https://machinelearningmastery.com/persistence-time-series-forecasting-with-python/
 @author: yjiang
 """
